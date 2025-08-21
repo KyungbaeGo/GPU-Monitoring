@@ -1,0 +1,143 @@
+{
+    "uid": "nvidia-dcgm-mvp",
+    "title": "NVIDIA DCGM (MVP)",
+    "schemaVersion": 36,
+    "version": 1,
+    "refresh": "30s",
+    "tags": [
+        "gpu",
+        "dcgm",
+        "mvp"
+    ],
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "templating": {
+        "list": [
+            {
+                "type": "query",
+                "name": "instance",
+                "label": "Instance",
+                "datasource": "Prometheus",
+                "query": "label_values(DCGM_FI_DEV_GPU_UTIL, instance)",
+                "refresh": 1,
+                "includeAll": false,
+                "multi": false
+            },
+            {
+                "type": "query",
+                "name": "gpu",
+                "label": "GPU",
+                "datasource": "Prometheus",
+                "query": "label_values(DCGM_FI_DEV_GPU_UTIL{instance=~\"$instance\"}, gpu)",
+                "refresh": 1,
+                "includeAll": true,
+                "multi": true
+            }
+        ]
+    },
+    "panels": [
+        {
+            "type": "timeseries",
+            "title": "GPU Utilization (%)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "avg by(gpu) (DCGM_FI_DEV_GPU_UTIL{instance=~\"$instance\", gpu=~\"$gpu\"})",
+                    "legendFormat": "GPU {{gpu}}"
+                }
+            ]
+        },
+        {
+            "type": "timeseries",
+            "title": "GPU Memory Used (bytes)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "bytes"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "avg by(gpu) (DCGM_FI_DEV_FB_USED{instance=~\"$instance\", gpu=~\"$gpu\"})",
+                    "legendFormat": "GPU {{gpu}}"
+                }
+            ]
+        },
+        {
+            "type": "timeseries",
+            "title": "GPU Temperature (°C)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "celsius"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "avg by(gpu) (DCGM_FI_DEV_GPU_TEMP{instance=~\"$instance\", gpu=~\"$gpu\"})",
+                    "legendFormat": "GPU {{gpu}}"
+                }
+            ]
+        },
+        {
+            "type": "timeseries",
+            "title": "GPU Memory Utilization (%)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "avg by(gpu) ((DCGM_FI_DEV_FB_USED{instance=~\"$instance\", gpu=~\"$gpu\"} / DCGM_FI_DEV_FB_TOTAL{instance=~\"$instance\", gpu=~\"$gpu\"}) * 100)",
+                    "legendFormat": "GPU {{gpu}}"
+                }
+            ]
+        }
+    ]
+}

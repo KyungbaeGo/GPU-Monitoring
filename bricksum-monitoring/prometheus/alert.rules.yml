@@ -1,0 +1,43 @@
+groups:
+  - name: general-alerts
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "Target {{ $labels.instance }} has been down for more than 5 minutes."
+
+      - alert: HighCPUUtilization
+        expr: avg by(instance) (rate(node_cpu_seconds_total{mode!="idle"}[5m])) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage > 80% for 10m."
+
+      - alert: HighGPUMemoryUtilization
+        expr: |
+          avg by(instance) (
+            (DCGM_FI_DEV_FB_USED / DCGM_FI_DEV_FB_TOTAL)
+          ) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GPU memory usage on {{ $labels.instance }}"
+          description: "GPU memory usage > 90% for 10m."
+
+      - alert: HighGPUUtilization
+        expr: avg by(instance) (DCGM_FI_DEV_GPU_UTIL) > 95
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GPU utilization on {{ $labels.instance }}"
+          description: "GPU utilization > 95% for 10m."
+
+

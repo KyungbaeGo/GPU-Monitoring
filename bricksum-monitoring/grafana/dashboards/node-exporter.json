@@ -1,0 +1,138 @@
+{
+    "uid": "node-exporter-mvp",
+    "title": "Node Exporter (MVP)",
+    "schemaVersion": 36,
+    "version": 1,
+    "refresh": "30s",
+    "tags": [
+        "node",
+        "exporter",
+        "mvp"
+    ],
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "timezone": "",
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "templating": {
+        "list": [
+            {
+                "type": "query",
+                "name": "instance",
+                "label": "Instance",
+                "datasource": "Prometheus",
+                "query": "label_values(up, instance)",
+                "refresh": 1,
+                "includeAll": false,
+                "multi": false
+            }
+        ]
+    },
+    "panels": [
+        {
+            "type": "timeseries",
+            "title": "CPU Usage (%)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\",instance=~\"$instance\"}[5m])) * 100)",
+                    "legendFormat": "CPU"
+                }
+            ]
+        },
+        {
+            "type": "timeseries",
+            "title": "Memory Usage (%)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(1 - (node_memory_MemAvailable_bytes{instance=~\"$instance\"} / node_memory_MemTotal_bytes{instance=~\"$instance\"})) * 100",
+                    "legendFormat": "Mem"
+                }
+            ]
+        },
+        {
+            "type": "timeseries",
+            "title": "Network RX/TX (bytes/s)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "Bps"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum by(instance) (rate(node_network_receive_bytes_total{device!~\"lo|docker.*\",instance=~\"$instance\"}[5m]))",
+                    "legendFormat": "RX"
+                },
+                {
+                    "expr": "sum by(instance) (rate(node_network_transmit_bytes_total{device!~\"lo|docker.*\",instance=~\"$instance\"}[5m]))",
+                    "legendFormat": "TX"
+                }
+            ]
+        },
+        {
+            "type": "timeseries",
+            "title": "Filesystem Usage (%)",
+            "datasource": "Prometheus",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/var/lib/docker.*\",instance=~\"$instance\"} - node_filesystem_free_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/var/lib/docker.*\",instance=~\"$instance\"}) / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/var/lib/docker.*\",instance=~\"$instance\"} * 100",
+                    "legendFormat": "{{mountpoint}}"
+                }
+            ]
+        }
+    ]
+}
